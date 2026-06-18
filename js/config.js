@@ -1,7 +1,7 @@
 export const CONFIG = {
   yourName: 'Лёвушка',
   galleryTitle: 'то, что я помню',
-  replayPrankText: 'Хочешь новые приятности? Умей и постараться ♥',
+  replayPrankText: 'Любишь новые приятности? Люби и постараться ♥',
 
   letterTexts: [
     {

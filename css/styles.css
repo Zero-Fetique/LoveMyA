@@ -418,6 +418,8 @@ html, body {
   transform-style: preserve-3d;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 
 /* Unrevealed 3D tile */

@@ -145,10 +145,13 @@ export function initMinesweeper(onWin) {
     }
   }
 
-  function toggleFlag(r, c) {
+  function toggleFlag(r, c, source = '') {
     if (gameOver || won) return;
     const i = idx(r, c);
     if (revealed[i]) return;
+
+    const now = Date.now();
+    if (source && now < flagGuardUntil && flagGuardCell === i) return;
 
     flagged[i] = !flagged[i];
     const tile = grid.children[i];
@@ -156,6 +159,102 @@ export function initMinesweeper(onWin) {
     flagsLeft += flagged[i] ? -1 : 1;
     updateMinesLeft();
     haptic('medium');
+
+    if (source) {
+      flagGuardUntil = now + 1100;
+      flagGuardCell = i;
+    }
+  }
+
+  const IS_TOUCH = navigator.maxTouchPoints > 0;
+  let flagGuardUntil = 0;
+  let flagGuardCell = -1;
+
+  function bindTileTouch(tile, r, c) {
+    let holdTimer = null;
+    let holdDone = false;
+    let didMove = false;
+    let startX = 0;
+    let startY = 0;
+
+    const HOLD_MS = 380;
+    const MOVE_THRESHOLD = 12;
+
+    function clearHold() {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+    }
+
+    tile.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      holdDone = false;
+      didMove = false;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      clearHold();
+      holdTimer = setTimeout(() => {
+        if (didMove) return;
+        holdDone = true;
+        toggleFlag(r, c, 'hold');
+        tile.classList.add('flag-hold');
+        setTimeout(() => tile.classList.remove('flag-hold'), 180);
+        if (navigator.vibrate) navigator.vibrate(35);
+      }, HOLD_MS);
+    }, { passive: true });
+
+    tile.addEventListener('touchmove', (e) => {
+      if (holdDone || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - startX;
+      const dy = e.touches[0].clientY - startY;
+      if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+        didMove = true;
+        clearHold();
+      }
+    }, { passive: true });
+
+    tile.addEventListener('touchend', (e) => {
+      clearHold();
+      if (holdDone) {
+        holdDone = false;
+        e.preventDefault();
+        return;
+      }
+      if (didMove) return;
+      e.preventDefault();
+      revealCell(r, c);
+    }, { passive: false });
+
+    tile.addEventListener('touchcancel', () => {
+      clearHold();
+      holdDone = false;
+      didMove = false;
+    });
+
+    tile.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+  }
+
+  function bindTileMouse(tile, r, c) {
+    tile.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      toggleFlag(r, c, 'menu');
+    });
+
+    tile.addEventListener('click', (e) => {
+      if (e.button !== 0) return;
+      revealCell(r, c);
+    });
+  }
+
+  function bindTile(tile, r, c) {
+    if (IS_TOUCH) {
+      bindTileTouch(tile, r, c);
+    } else {
+      bindTileMouse(tile, r, c);
+    }
   }
 
   function checkWin() {
@@ -172,124 +271,13 @@ export function initMinesweeper(onWin) {
     }
   }
 
-  function bindTile(tile, r, c) {
-    let holdTimer = null;
-    let fingerDown = false;
-    let holdFired = false;
-    let didMove = false;
-    let skipClick = false;
-    let startX = 0;
-    let startY = 0;
-    let blockUntil = 0;
-
-    const HOLD_MS = 450;
-    const MOVE_THRESHOLD = 14;
-
-    function blockGestures(ms = 700) {
-      blockUntil = Date.now() + ms;
-      skipClick = true;
-    }
-
-    function clearHold() {
-      if (holdTimer) {
-        clearTimeout(holdTimer);
-        holdTimer = null;
-      }
-    }
-
-    tile.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      if (Date.now() < blockUntil) return;
-      if (e.pointerType === 'touch') return;
-      toggleFlag(r, c);
-      blockGestures(400);
-    });
-
-    tile.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      fingerDown = true;
-      holdFired = false;
-      didMove = false;
-      skipClick = false;
-      startX = e.clientX;
-      startY = e.clientY;
-      clearHold();
-      try {
-        tile.setPointerCapture(e.pointerId);
-      } catch (_) { /* ignore */ }
-      holdTimer = setTimeout(() => {
-        if (!fingerDown || didMove || holdFired) return;
-        holdFired = true;
-        toggleFlag(r, c);
-        blockGestures(800);
-        tile.classList.add('flag-hold');
-        setTimeout(() => tile.classList.remove('flag-hold'), 180);
-        if (navigator.vibrate) navigator.vibrate(35);
-      }, HOLD_MS);
-    });
-
-    tile.addEventListener('pointermove', (e) => {
-      if (holdFired) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
-        didMove = true;
-        clearHold();
-      }
-    });
-
-    tile.addEventListener('pointerup', (e) => {
-      fingerDown = false;
-      clearHold();
-      try {
-        tile.releasePointerCapture(e.pointerId);
-      } catch (_) { /* ignore */ }
-
-      if (holdFired) {
-        e.preventDefault();
-        blockGestures(800);
-        holdFired = false;
-        return;
-      }
-
-      if (didMove) return;
-
-      if (e.pointerType === 'touch') {
-        e.preventDefault();
-        skipClick = true;
-        revealCell(r, c);
-        return;
-      }
-
-      if (e.pointerType === 'mouse' && e.button === 0) {
-        revealCell(r, c);
-      }
-    });
-
-    tile.addEventListener('pointercancel', () => {
-      fingerDown = false;
-      clearHold();
-      holdFired = false;
-      didMove = false;
-    });
-
-    tile.addEventListener('click', (e) => {
-      if (skipClick || Date.now() < blockUntil) {
-        e.preventDefault();
-        e.stopPropagation();
-        skipClick = false;
-        return;
-      }
-      revealCell(r, c);
-    });
-  }
-
   function buildGrid() {
     grid.innerHTML = '';
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
-        const tile = document.createElement('button');
+        const tile = document.createElement('div');
         tile.className = 'ms-tile hidden-tile';
+        tile.setAttribute('role', 'button');
         tile.setAttribute('aria-label', 'Клетка');
         bindTile(tile, r, c);
         grid.appendChild(tile);
