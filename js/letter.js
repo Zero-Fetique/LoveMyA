@@ -1,5 +1,5 @@
 import { CONFIG } from './config-loader.js';
-import { typeLetter, setupFixedPaper } from './typo-typer.js';
+import { typeLetter, applyPaperForLines, linesToText, fitPaperToScreen } from './typo-typer.js';
 
 const STORAGE_KEY = 'loveMyA_lastLetter';
 
@@ -22,26 +22,38 @@ export function initLetter({ onReplayPrank } = {}) {
   const cursorEl = document.getElementById('letter-cursor');
   const writingArea = document.getElementById('letter-writing-area');
   const paper = document.querySelector('.letter-paper');
+  const envelope = document.querySelector('.letter-envelope');
   const nameEl = document.getElementById('letter-name');
   const replayBtn = document.getElementById('letter-replay');
 
   nameEl.textContent = CONFIG.yourName;
-  setupFixedPaper(paper, writingArea, CONFIG.letterTexts);
+
+  const tallest = CONFIG.letterTexts.reduce((best, item) => (
+    item.lines.length > best.lines.length ? item : best
+  ), CONFIG.letterTexts[0]);
+  applyPaperForLines(paper, writingArea, tallest.lines);
+
+  window.addEventListener('resize', () => fitPaperToScreen(paper));
 
   async function play() {
-    const text = pickRandomLetter();
+    const letter = pickRandomLetter();
+    applyPaperForLines(paper, writingArea, letter.lines);
+
+    const text = linesToText(letter.lines);
 
     replayBtn.classList.add('hidden');
     typedEl.textContent = '';
     if (cursorEl) cursorEl.style.display = 'inline';
 
     await typeLetter(typedEl, cursorEl, text, {
-      speed: 48,
+      speed: 46,
       typoChance: 0.09,
       onComplete: () => {
         replayBtn.classList.remove('hidden');
       },
     });
+
+    fitPaperToScreen(paper);
   }
 
   replayBtn.addEventListener('click', () => {

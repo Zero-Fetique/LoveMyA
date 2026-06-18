@@ -894,10 +894,16 @@ html, body {
 /* ===== SCENE 4: LETTER ===== */
 #scene-letter {
   background: linear-gradient(160deg, #fff0f8, #ffd6ec);
-  padding: 12px 0 20px;
-  overflow-y: auto;
-  justify-content: flex-start;
+  padding: 8px 0 10px;
+  overflow: hidden;
+  justify-content: center;
   align-items: center;
+}
+
+#scene-letter .btn-ghost {
+  flex-shrink: 0;
+  margin-top: 6px;
+  margin-bottom: 4px;
 }
 
 #scene-letter.active {
@@ -933,36 +939,31 @@ html, body {
 }
 
 .letter-scroll {
-  flex: 1;
-  overflow-y: auto;
   width: 100%;
   max-width: 400px;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 8px 16px 16px;
+  align-items: center;
+  padding: 4px 16px 8px;
   z-index: 2;
-}
-
-.letter-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 Q35 20 30 30 Q25 20 30 5Z' fill='%23ffb3d9' opacity='0.08'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
+  overflow: hidden;
+  flex-shrink: 1;
+  min-height: 0;
 }
 
 .letter-envelope {
   width: 100%;
-  max-width: 360px;
+  max-width: 340px;
   margin: 0 auto;
   z-index: 2;
+  transform-origin: center center;
+  transition: transform 0.25s ease;
 }
 
 .letter-paper {
   background: #fffef9;
   border-radius: 6px;
-  padding: 26px 22px 30px 22px;
+  padding: 22px 20px 26px 20px;
   box-shadow:
     0 2px 0 #ffc8e0,
     0 8px 30px rgba(200, 60, 100, 0.2);
@@ -971,6 +972,14 @@ html, body {
   overflow: hidden;
   box-sizing: border-box;
   flex-shrink: 0;
+}
+
+.letter-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 Q35 20 30 30 Q25 20 30 5Z' fill='%23ffb3d9' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
 }
 
 .letter-paper::before {
@@ -988,35 +997,34 @@ html, body {
   position: relative;
   z-index: 1;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.06rem;
-  line-height: 32px;
+  font-size: 1.02rem;
+  line-height: 30px;
   color: #4a2030;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  padding-left: 20px;
+  white-space: pre;
+  padding-left: 18px;
   margin: 0;
   overflow: hidden;
   box-sizing: border-box;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
-    transparent 31px,
-    rgba(255, 150, 190, 0.3) 31px,
-    rgba(255, 150, 190, 0.3) 32px
+    transparent 29px,
+    rgba(255, 150, 190, 0.32) 29px,
+    rgba(255, 150, 190, 0.32) 30px
   );
   background-position: 0 0;
 }
 
 .letter-typed {
-  white-space: pre-wrap;
+  white-space: pre;
 }
 
 .letter-deco-top {
   text-align: center;
   color: var(--pink-mid);
-  font-size: 0.9rem;
-  letter-spacing: 0.5em;
-  margin-bottom: 20px;
+  font-size: 0.85rem;
+  letter-spacing: 0.45em;
+  margin-bottom: 14px;
   position: relative;
   z-index: 1;
 }
@@ -1027,8 +1035,8 @@ html, body {
   animation: cursor-blink 0.8s step-end infinite;
   font-weight: 300;
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  line-height: 32px;
+  font-size: 1.02rem;
+  line-height: 30px;
   vertical-align: baseline;
 }
 
@@ -1038,12 +1046,12 @@ html, body {
 }
 
 .letter-deco-bottom {
-  margin-top: 20px;
+  margin-top: 14px;
   padding-right: 4px;
   text-align: right;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   position: relative;
   z-index: 1;
 }
