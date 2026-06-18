@@ -225,7 +225,7 @@ export function initGallery(onFinish) {
     if (envelopeGate.classList.contains('opening')) return;
     haptic('success');
     envelopeGate.classList.add('opening');
-    setTimeout(onFinish, 900);
+    setTimeout(onFinish, 1100);
   }
 
   showCard(0);

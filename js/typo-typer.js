@@ -1,8 +1,5 @@
-/**
- * Печать текста с «ошибками» — курсор inline в конце текста
- */
 const LINE_HEIGHT = 32;
-const CHARS_PER_LINE = 33;
+const CHARS_PER_LINE = 28;
 
 export async function typeLetter(typedEl, cursorEl, text, options = {}) {
   const {
@@ -81,22 +78,22 @@ export function countVisualLines(text) {
   return total;
 }
 
-export function prepareWritingArea(writingAreaEl, text) {
-  const lines = countVisualLines(text);
-  const totalLines = lines + 2;
-  writingAreaEl.style.height = `${totalLines * LINE_HEIGHT}px`;
+export function getFixedLineCount(texts) {
+  const maxLines = texts.reduce((max, t) => Math.max(max, countVisualLines(t)), 0);
+  return Math.max(maxLines + 5, 18);
 }
 
-export function setPaperFixedSize(paperEl, text) {
-  const lines = countVisualLines(text) + 2;
-  const writingHeight = lines * LINE_HEIGHT;
-  const paperHeight = 68 + writingHeight + 100;
-  paperEl.style.minHeight = `${paperHeight}px`;
+export function setupFixedPaper(paperEl, writingAreaEl, texts) {
+  const lineCount = getFixedLineCount(texts);
+  const writingHeight = lineCount * LINE_HEIGHT;
+  const paperHeight = 72 + writingHeight + 96;
+
+  writingAreaEl.style.height = `${writingHeight}px`;
+  writingAreaEl.style.minHeight = `${writingHeight}px`;
+  writingAreaEl.style.maxHeight = `${writingHeight}px`;
+
   paperEl.style.height = `${paperHeight}px`;
-}
-
-/** @deprecated use setPaperFixedSize + prepareWritingArea */
-export function preparePaper(paperEl, writingAreaEl, text) {
-  prepareWritingArea(writingAreaEl, text);
-  setPaperFixedSize(paperEl, text);
+  paperEl.style.minHeight = `${paperHeight}px`;
+  paperEl.style.maxHeight = `${paperHeight}px`;
+  paperEl.dataset.lines = String(lineCount);
 }

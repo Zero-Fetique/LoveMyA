@@ -1,5 +1,5 @@
 import { CONFIG } from './config-loader.js';
-import { typeLetter, setPaperFixedSize, prepareWritingArea } from './typo-typer.js';
+import { typeLetter, setupFixedPaper } from './typo-typer.js';
 
 const STORAGE_KEY = 'loveMyA_lastLetter';
 
@@ -17,7 +17,7 @@ function pickRandomLetter() {
   return texts[idx];
 }
 
-export function initLetter() {
+export function initLetter({ onReplayPrank } = {}) {
   const typedEl = document.getElementById('letter-typed');
   const cursorEl = document.getElementById('letter-cursor');
   const writingArea = document.getElementById('letter-writing-area');
@@ -26,15 +26,10 @@ export function initLetter() {
   const replayBtn = document.getElementById('letter-replay');
 
   nameEl.textContent = CONFIG.yourName;
-
-  // Подготовить лист под самый длинный текст сразу — без анимации и скачков
-  const longest = CONFIG.letterTexts.reduce((a, b) => (a.length > b.length ? a : b), '');
-  setPaperFixedSize(paper, longest);
-  prepareWritingArea(writingArea, longest);
+  setupFixedPaper(paper, writingArea, CONFIG.letterTexts);
 
   async function play() {
     const text = pickRandomLetter();
-    prepareWritingArea(writingArea, text);
 
     replayBtn.classList.add('hidden');
     typedEl.textContent = '';
@@ -49,7 +44,9 @@ export function initLetter() {
     });
   }
 
-  replayBtn.addEventListener('click', play);
+  replayBtn.addEventListener('click', () => {
+    if (onReplayPrank) onReplayPrank();
+  });
 
   return { play };
 }

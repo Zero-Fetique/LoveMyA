@@ -1,4 +1,3 @@
-/** Плавающие сердечки и бабочки для декора сцен */
 export function initFloatingDecor(container, options = {}) {
   const {
     hearts = 5,
