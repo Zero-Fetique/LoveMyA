@@ -174,14 +174,21 @@ export function initMinesweeper(onWin) {
 
   function bindTile(tile, r, c) {
     let holdTimer = null;
-    let didHold = false;
+    let fingerDown = false;
+    let holdFired = false;
     let didMove = false;
+    let skipClick = false;
     let startX = 0;
     let startY = 0;
-    let suppressClickUntil = 0;
+    let blockUntil = 0;
 
-    const HOLD_MS = 480;
-    const MOVE_THRESHOLD = 12;
+    const HOLD_MS = 450;
+    const MOVE_THRESHOLD = 14;
+
+    function blockGestures(ms = 700) {
+      blockUntil = Date.now() + ms;
+      skipClick = true;
+    }
 
     function clearHold() {
       if (holdTimer) {
@@ -190,38 +197,39 @@ export function initMinesweeper(onWin) {
       }
     }
 
-    function beginPress(x, y) {
-      didHold = false;
-      didMove = false;
-      startX = x;
-      startY = y;
-      clearHold();
-      holdTimer = setTimeout(() => {
-        didHold = true;
-        toggleFlag(r, c);
-        suppressClickUntil = Date.now() + 550;
-        tile.classList.add('flag-hold');
-        setTimeout(() => tile.classList.remove('flag-hold'), 180);
-        if (navigator.vibrate) navigator.vibrate(35);
-      }, HOLD_MS);
-    }
-
     tile.addEventListener('contextmenu', (e) => {
       e.preventDefault();
+      if (Date.now() < blockUntil) return;
+      if (e.pointerType === 'touch') return;
       toggleFlag(r, c);
-      suppressClickUntil = Date.now() + 300;
+      blockGestures(400);
     });
 
     tile.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      fingerDown = true;
+      holdFired = false;
+      didMove = false;
+      skipClick = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      clearHold();
       try {
         tile.setPointerCapture(e.pointerId);
       } catch (_) { /* ignore */ }
-      beginPress(e.clientX, e.clientY);
+      holdTimer = setTimeout(() => {
+        if (!fingerDown || didMove || holdFired) return;
+        holdFired = true;
+        toggleFlag(r, c);
+        blockGestures(800);
+        tile.classList.add('flag-hold');
+        setTimeout(() => tile.classList.remove('flag-hold'), 180);
+        if (navigator.vibrate) navigator.vibrate(35);
+      }, HOLD_MS);
     });
 
     tile.addEventListener('pointermove', (e) => {
-      if (didHold) return;
+      if (holdFired) return;
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
       if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
@@ -231,29 +239,45 @@ export function initMinesweeper(onWin) {
     });
 
     tile.addEventListener('pointerup', (e) => {
+      fingerDown = false;
       clearHold();
-      if (didHold) {
-        suppressClickUntil = Date.now() + 550;
-        didHold = false;
+      try {
+        tile.releasePointerCapture(e.pointerId);
+      } catch (_) { /* ignore */ }
+
+      if (holdFired) {
+        e.preventDefault();
+        blockGestures(800);
+        holdFired = false;
         return;
       }
+
       if (didMove) return;
+
       if (e.pointerType === 'touch') {
         e.preventDefault();
+        skipClick = true;
+        revealCell(r, c);
+        return;
+      }
+
+      if (e.pointerType === 'mouse' && e.button === 0) {
         revealCell(r, c);
       }
     });
 
     tile.addEventListener('pointercancel', () => {
+      fingerDown = false;
       clearHold();
-      didHold = false;
+      holdFired = false;
       didMove = false;
     });
 
     tile.addEventListener('click', (e) => {
-      if (Date.now() < suppressClickUntil) {
+      if (skipClick || Date.now() < blockUntil) {
         e.preventDefault();
         e.stopPropagation();
+        skipClick = false;
         return;
       }
       revealCell(r, c);
