@@ -22,7 +22,6 @@ export function initLetter({ onReplayPrank } = {}) {
   const cursorEl = document.getElementById('letter-cursor');
   const writingArea = document.getElementById('letter-writing-area');
   const paper = document.querySelector('.letter-paper');
-  const envelope = document.querySelector('.letter-envelope');
   const nameEl = document.getElementById('letter-name');
   const replayBtn = document.getElementById('letter-replay');
 
