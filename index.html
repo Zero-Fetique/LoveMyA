@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <meta name="theme-color" content="#0a0014">
+
+  <title>Для тебя ♥</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+</head>
+
+<body>
+
+  <div id="app">
+
+
+
+    <!-- ===== СЦЕНА 1: КОСМОС И СЕРДЦЕ ===== -->
+
+    <section id="scene-intro" class="scene active">
+
+      <canvas id="stars-canvas"></canvas>
+
+      <div class="nebula nebula-1"></div>
+
+      <div class="nebula nebula-2"></div>
+
+      <div class="intro-hint">нажми на сердечко</div>
+
+      <div id="heart-container" class="heart-container">
+        <div class="heart-inner">
+          <div class="heart-glow"></div>
+          <svg class="heart-svg" viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff6b9d"/>
+                <stop offset="50%" stop-color="#ff2d6b"/>
+                <stop offset="100%" stop-color="#c9185b"/>
+              </linearGradient>
+              <filter id="heartGlow">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M50 82 C20 55, 0 35, 15 18 C25 8, 40 12, 50 25 C60 12, 75 8, 85 18 C100 35, 80 55, 50 82Z"
+                  fill="url(#heartGrad)" filter="url(#heartGlow)"/>
+          </svg>
+          <div class="heart-shine"></div>
+        </div>
+      </div>
+
+    </section>
+
+
+
+    <!-- ===== СЦЕНА 2: САПЁР ===== -->
+
+    <section id="scene-minesweeper" class="scene">
+
+      <div class="ms-bg-flowers"></div>
+
+      <div class="ms-header">
+
+        <h2 class="ms-title">♥ Сапёр для самых особенных ♥</h2>
+
+        <p class="ms-subtitle">Сначала научись — потом сюрприз</p>
+
+        <button id="tutorial-btn" type="button" class="tutorial-btn">
+
+          <span class="tutorial-icon">?</span>
+
+          Как играть
+
+        </button>
+
+        <p class="ms-touch-hint">тап — открыть &nbsp;·&nbsp; удержать — флажок</p>
+
+      </div>
+
+      <div class="ms-stats">
+
+        <span id="ms-mines-left">💣 8</span>
+
+        <span id="ms-timer">⏱ 0:00</span>
+
+        <button id="ms-reset" class="ms-reset-btn" title="Начать заново">↺</button>
+
+      </div>
+
+      <div class="ms-field-wrapper">
+
+        <div class="ms-fence ms-fence-top"></div>
+
+        <div class="ms-fence ms-fence-bottom"></div>
+
+        <div class="ms-fence ms-fence-left"></div>
+
+        <div class="ms-fence ms-fence-right"></div>
+
+        <div class="ms-flower ms-flower-tl"></div>
+
+        <div class="ms-flower ms-flower-tr"></div>
+
+        <div class="ms-flower ms-flower-bl"></div>
+
+        <div class="ms-flower ms-flower-br"></div>
+
+        <div id="minesweeper-grid" class="minesweeper-grid"></div>
+
+      </div>
+
+      <div id="ms-win-overlay" class="ms-win-overlay hidden">
+
+        <div class="ms-win-content">
+
+          <p>Ты справилась! ♥</p>
+
+          <button id="ms-continue" class="btn-primary">Дальше →</button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- Инструкция-анимация -->
+
+    <div id="tutorial-overlay" class="tutorial-overlay hidden">
+
+      <div class="tutorial-modal">
+
+        <h3 class="tutorial-title">Как играть</h3>
+
+        <div class="tutorial-field">
+
+          <div id="tutorial-grid" class="tutorial-grid"></div>
+
+          <div id="tutorial-finger" class="tutorial-finger hidden">👆</div>
+
+        </div>
+
+        <p id="tutorial-text" class="tutorial-text"></p>
+
+        <div id="tutorial-dots" class="tutorial-dots"></div>
+
+        <button id="tutorial-close" type="button" class="btn-primary tutorial-close-btn">Дальше</button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ===== СЦЕНА 3: ГАЛЕРЕЯ ===== -->
+
+    <section id="scene-gallery" class="scene">
+
+      <div class="gallery-bg"></div>
+
+      <div class="gallery-header">
+        <h2 class="gallery-title" id="gallery-title">то, что я помню</h2>
+        <p class="gallery-counter"><span id="gallery-current">1</span> / <span id="gallery-total">5</span></p>
+      </div>
+
+      <div class="gallery-stage" id="gallery-stage"></div>
+
+      <div class="gallery-footer" id="gallery-footer">
+        <p class="gallery-caption" id="gallery-caption"></p>
+        <p class="gallery-swipe-hint" id="gallery-swipe-hint">смахни в сторону — следующий кадр</p>
+      </div>
+
+      <div id="gallery-envelope" class="gallery-envelope hidden">
+        <div class="envelope-body">
+          <div class="envelope-flap"></div>
+          <div class="envelope-heart">♥</div>
+        </div>
+        <p class="envelope-label">Кое-что ещё для тебя</p>
+        <p class="envelope-hint">нажми на конверт</p>
+      </div>
+
+    </section>
+
+
+
+    <!-- ===== СЦЕНА 4: ОТКРЫТКА ===== -->
+
+    <section id="scene-letter" class="scene">
+      <div class="letter-bg"></div>
+      <div id="letter-decor" class="letter-decor" aria-hidden="true"></div>
+      <div class="letter-scroll">
+
+        <div class="letter-envelope">
+
+          <div class="letter-paper">
+
+            <div class="letter-deco-top">♥ ♥ ♥</div>
+
+            <div class="letter-writing-area" id="letter-writing-area">
+              <span id="letter-typed" class="letter-typed"></span><span class="letter-cursor" id="letter-cursor">|</span>
+            </div>
+
+            <div class="letter-deco-bottom">
+
+              <span class="letter-signature">С любовью,</span>
+
+              <span class="letter-name" id="letter-name">Твоё имя</span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <button id="letter-replay" type="button" class="btn-ghost hidden">Прочитать ещё раз</button>
+
+    </section>
+
+    <!-- Розовое свечение при влёте — поверх всех сцен -->
+    <div id="fly-overlay" class="fly-overlay hidden"></div>
+
+  </div>
+
+
+
+  <script type="module" src="js/main.js?v=7"></script>
+
+</body>
+
+</html>
+
+
