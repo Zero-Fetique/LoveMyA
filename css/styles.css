@@ -466,6 +466,10 @@ html, body {
   justify-content: center;
 }
 
+.ms-tile.flag-hold {
+  box-shadow: 0 0 0 2px #ff2d6b, 0 0 12px rgba(255, 45, 107, 0.45);
+}
+
 .ms-tile.mine-hit {
   background: linear-gradient(160deg, #ff6b6b, #ee2040) !important;
   animation: mine-shake 0.4s ease;

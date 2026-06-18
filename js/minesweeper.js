@@ -173,55 +173,90 @@ export function initMinesweeper(onWin) {
   }
 
   function bindTile(tile, r, c) {
-    let longPressTimer = null;
-    let longPressFired = false;
-    let touchMoved = false;
-    let touchStartX = 0;
-    let touchStartY = 0;
+    let holdTimer = null;
+    let didHold = false;
+    let didMove = false;
+    let startX = 0;
+    let startY = 0;
+    let suppressClickUntil = 0;
+
+    const HOLD_MS = 480;
+    const MOVE_THRESHOLD = 12;
+
+    function clearHold() {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        holdTimer = null;
+      }
+    }
+
+    function beginPress(x, y) {
+      didHold = false;
+      didMove = false;
+      startX = x;
+      startY = y;
+      clearHold();
+      holdTimer = setTimeout(() => {
+        didHold = true;
+        toggleFlag(r, c);
+        suppressClickUntil = Date.now() + 550;
+        tile.classList.add('flag-hold');
+        setTimeout(() => tile.classList.remove('flag-hold'), 180);
+        if (navigator.vibrate) navigator.vibrate(35);
+      }, HOLD_MS);
+    }
 
     tile.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       toggleFlag(r, c);
+      suppressClickUntil = Date.now() + 300;
     });
 
-    tile.addEventListener('click', () => {
-      if (longPressFired) {
-        longPressFired = false;
+    tile.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      try {
+        tile.setPointerCapture(e.pointerId);
+      } catch (_) { /* ignore */ }
+      beginPress(e.clientX, e.clientY);
+    });
+
+    tile.addEventListener('pointermove', (e) => {
+      if (didHold) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (Math.abs(dx) > MOVE_THRESHOLD || Math.abs(dy) > MOVE_THRESHOLD) {
+        didMove = true;
+        clearHold();
+      }
+    });
+
+    tile.addEventListener('pointerup', (e) => {
+      clearHold();
+      if (didHold) {
+        suppressClickUntil = Date.now() + 550;
+        didHold = false;
+        return;
+      }
+      if (didMove) return;
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+        revealCell(r, c);
+      }
+    });
+
+    tile.addEventListener('pointercancel', () => {
+      clearHold();
+      didHold = false;
+      didMove = false;
+    });
+
+    tile.addEventListener('click', (e) => {
+      if (Date.now() < suppressClickUntil) {
+        e.preventDefault();
+        e.stopPropagation();
         return;
       }
       revealCell(r, c);
-    });
-
-    tile.addEventListener('touchstart', (e) => {
-      touchMoved = false;
-      longPressFired = false;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-      longPressTimer = setTimeout(() => {
-        longPressFired = true;
-        toggleFlag(r, c);
-        if (navigator.vibrate) navigator.vibrate(30);
-      }, 450);
-    }, { passive: true });
-
-    tile.addEventListener('touchmove', (e) => {
-      const dx = e.touches[0].clientX - touchStartX;
-      const dy = e.touches[0].clientY - touchStartY;
-      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
-        touchMoved = true;
-        clearTimeout(longPressTimer);
-      }
-    }, { passive: true });
-
-    tile.addEventListener('touchend', (e) => {
-      clearTimeout(longPressTimer);
-      if (longPressFired || touchMoved) return;
-      e.preventDefault();
-      revealCell(r, c);
-    });
-
-    tile.addEventListener('touchcancel', () => {
-      clearTimeout(longPressTimer);
     });
   }
 
