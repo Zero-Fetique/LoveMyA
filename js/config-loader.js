@@ -1,5 +1,5 @@
-export const CACHE_BUST = '11';
+export const CACHE_BUST = '12';
 
-import { CONFIG } from './config.js?v=11';
+import { CONFIG } from './config.js?v=12';
 
 export { CONFIG };

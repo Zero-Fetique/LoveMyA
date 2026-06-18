@@ -894,10 +894,18 @@ html, body {
 /* ===== SCENE 4: LETTER ===== */
 #scene-letter {
   background: linear-gradient(160deg, #fff0f8, #ffd6ec);
-  padding: 8px 0 10px;
+  padding: 6px 0 8px;
   overflow: hidden;
   justify-content: center;
   align-items: center;
+  overscroll-behavior: none;
+}
+
+#scene-letter.letter-locked,
+#scene-letter.letter-locked .letter-scroll {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 #scene-letter .btn-ghost {
@@ -996,15 +1004,13 @@ html, body {
 .letter-writing-area {
   position: relative;
   z-index: 1;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.02rem;
-  line-height: 30px;
-  color: #4a2030;
-  white-space: pre;
   padding-left: 18px;
   margin: 0;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+.letter-lines {
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
@@ -1013,10 +1019,27 @@ html, body {
     rgba(255, 150, 190, 0.32) 30px
   );
   background-position: 0 0;
+  background-size: 100% 30px;
 }
 
-.letter-typed {
-  white-space: pre;
+.letter-line {
+  height: 30px;
+  line-height: 30px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.02rem;
+  color: #4a2030;
+  display: flex;
+  align-items: center;
+}
+
+.letter-line--blank {
+  pointer-events: none;
+}
+
+.letter-line-text {
+  white-space: nowrap;
 }
 
 .letter-deco-top {
@@ -1030,14 +1053,14 @@ html, body {
 }
 
 .letter-cursor {
-  display: inline;
+  display: none;
   color: var(--pink-hot);
   animation: cursor-blink 0.8s step-end infinite;
   font-weight: 300;
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.02rem;
   line-height: 30px;
-  vertical-align: baseline;
+  flex-shrink: 0;
 }
 
 @keyframes cursor-blink {
